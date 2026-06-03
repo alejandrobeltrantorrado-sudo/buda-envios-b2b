@@ -1847,8 +1847,8 @@ async function fetchCalcQuote() {
   } catch(err) {
     body.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--red);font-size:0.82rem;">
       No se pudo obtener cotización de Buda.com<br>
-      <span style="font-size:0.68rem;color:var(--text-3);display:block;margin-top:4px;">${err.message} · El proxy puede tener limitaciones temporales</span>
-      <button onclick="fetchCalcQuote()" style="margin-top:10px;font-size:0.72rem;padding:5px 14px;border-radius:50px;border:1px solid var(--line-2);background:white;cursor:pointer;">Reintentar</button>
+      <span style="font-size:0.68rem;color:var(--text-3);display:block;margin-top:4px;font-family:var(--mono);">${err.message}</span>
+      <button onclick="fetchCalcQuote()" style="margin-top:12px;font-size:0.72rem;padding:6px 16px;border-radius:50px;border:1.5px solid var(--accent);background:white;color:var(--accent);cursor:pointer;font-family:var(--serif);font-weight:600;">↻ Reintentar</button>
     </div>`;
     document.getElementById('calcUpdTime').textContent = 'Error al cotizar';
   }
