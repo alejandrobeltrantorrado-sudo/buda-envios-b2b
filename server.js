@@ -15,19 +15,11 @@ app.post('/quote', async (req, res) => {
   try {
     const { origin_amount, origin_currency, destination_currency, payment_method } = req.body;
 
-    const COUNTRY_MAP = {
-      COP: 'CO',
-      PEN: 'PE',
-      VES: 'VE',
-      BOB: 'BO',
-    };
-
     const payload = {
       origin_amount: Number(origin_amount),
       origin_currency: String(origin_currency).toUpperCase(),
       destination_currency: String(destination_currency).toUpperCase(),
-      destination_country: COUNTRY_MAP[String(destination_currency).toUpperCase()] || null,
-      payment_method: payment_method || 'bank_transfer',
+      payment_method: payment_method,
     };
 
     console.log('→ Buda request:', JSON.stringify(payload));
