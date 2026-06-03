@@ -1,0 +1,15 @@
+{
+  "name": "buda-envios-b2b",
+  "version": "1.0.0",
+  "description": "Buda Envíos — Landing B2B2C con proxy para API pública de remesas",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

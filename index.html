@@ -1225,21 +1225,11 @@ transfer = client.transfers.<span class="c-method">create_international</span>(
     <div class="live-tick">
       <div class="live-dot"></div>
       Tasa actualizada en tiempo real desde Buda.com · USDC/CLP
-      <span id="heroLiveRate" style="margin-left:8px;color:var(--text-2)">Cargando...</span>
     </div>
   </div>
 </section>
 
-<!-- TICKER STRIP -->
-<div class="ticker-strip">
-  <div class="ticker-inner" id="tickerInner">
-    <div class="tick-item"><span class="tick-pair">BTC/CLP</span><span class="tick-price" id="t-btc"><span class="spin"></span></span><span class="tick-change" id="tc-btc">—</span></div>
-    <div class="tick-item"><span class="tick-pair">ETH/CLP</span><span class="tick-price" id="t-eth"><span class="spin"></span></span><span class="tick-change" id="tc-eth">—</span></div>
-    <div class="tick-item"><span class="tick-pair">USDC/CLP</span><span class="tick-price" id="t-usdc"><span class="spin"></span></span><span class="tick-change" id="tc-usdc">—</span></div>
-    <div class="tick-item"><span class="tick-pair">USDT/CLP</span><span class="tick-price" id="t-usdt"><span class="spin"></span></span><span class="tick-change" id="tc-usdt">—</span></div>
-    <div class="tick-item"><span class="tick-pair">BTC/COP</span><span class="tick-price" id="t-btccop"><span class="spin"></span></span><span class="tick-change" id="tc-btccop">—</span></div>
-  </div>
-</div>
+
 
 <!-- USE CASES -->
 <section class="section" id="use-cases">
@@ -1757,26 +1747,7 @@ async function fetchTicker(market) {
   } catch { return null; }
 }
 
-async function loadTickers() {
-  const pairs = [
-    {id:'btc-clp',  tEl:'t-btc',    cEl:'tc-btc',    pre:'$'},
-    {id:'eth-clp',  tEl:'t-eth',    cEl:'tc-eth',    pre:'$'},
-    {id:'usdc-clp', tEl:'t-usdc',   cEl:'tc-usdc',   pre:'$'},
-    {id:'usdt-clp', tEl:'t-usdt',   cEl:'tc-usdt',   pre:'$'},
-    {id:'btc-cop',  tEl:'t-btccop', cEl:'tc-btccop', pre:'COP '},
-  ];
-  for (const p of pairs) {
-    const tk = await fetchTicker(p.id);
-    if (!tk) continue;
-    const last = parseFloat(tk.last_price[0]);
-    const chg  = parseFloat(tk.price_variation_24h);
-    const isUp = chg >= 0;
-    const tEl  = document.getElementById(p.tEl);
-    if (tEl) tEl.textContent = p.pre + fmt(last);
-    const cEl = document.getElementById(p.cEl);
-    if (cEl) { cEl.textContent = (isUp?'▲ +':'▼ ')+(chg*100).toFixed(2)+'%'; cEl.className='tick-change '+(isUp?'tick-up':'tick-down'); }
-  }
-}
+
 
 /* ── API CODE TABS (hero) ── */
 function showTab(btn, id) {
@@ -1787,7 +1758,7 @@ function showTab(btn, id) {
 }
 
 /* ── BUSINESS CALCULATOR ── */
-const CALC_ENDPOINT = 'https://www.buda.com/api/v2/public_remittances';
+const CALC_ENDPOINT = '/quote';
 
 const METHODS = {
   COP: [{id:'bank_transfer',label:'Transferencia bancaria'},{id:'nequi',label:'Nequi'},{id:'daviplata',label:'Daviplata'}],
@@ -1838,8 +1809,7 @@ async function fetchCalcQuote() {
   body.innerHTML = '<div style="text-align:center;padding:1.5rem 0;color:var(--text-3);font-size:0.82rem;"><div style="width:16px;height:16px;border:2px solid var(--line-2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle;"></div>Consultando Buda.com...</div>';
 
   try {
-    const proxyUrl = PROXY + encodeURIComponent(CALC_ENDPOINT);
-    const res = await fetch(proxyUrl, {
+    const res = await fetch(CALC_ENDPOINT, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -1947,8 +1917,7 @@ function drawCalcChart(monthly) {
 }
 
 /* ── INIT ── */
-loadTickers();
-setInterval(loadTickers, 30000);
+
 renderCalcMethods();
 fetchCalcQuote();
 setInterval(fetchCalcQuote, 300000);
