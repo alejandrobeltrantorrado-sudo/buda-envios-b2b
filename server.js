@@ -15,12 +15,20 @@ app.post('/quote', async (req, res) => {
   try {
     const { origin_amount, origin_currency, destination_currency, payment_method } = req.body;
 
+    const COUNTRY_MAP = {
+      COP: 'CO',
+      PEN: 'PE',
+      VES: 'VE',
+      BOB: 'BO',
+    };
+
     const payload = {
       origin_amount: Number(origin_amount),
-      origin_currency,
-      destination_currency,
+      origin_currency: String(origin_currency).toUpperCase(),
+      destination_currency: String(destination_currency).toUpperCase(),
+      destination_country: COUNTRY_MAP[String(destination_currency).toUpperCase()] || null,
+      payment_method: payment_method || 'bank_transfer',
     };
-    if (payment_method) payload.payment_method = payment_method;
 
     console.log('→ Buda request:', JSON.stringify(payload));
 
@@ -38,7 +46,8 @@ app.post('/quote', async (req, res) => {
     console.log('← Buda response:', response.status, text.slice(0, 200));
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: text });
+      console.error('← Buda error body:', text);
+      return res.status(response.status).json({ error: `Buda ${response.status}: ${text}` });
     }
 
     res.setHeader('Content-Type', 'application/json');
