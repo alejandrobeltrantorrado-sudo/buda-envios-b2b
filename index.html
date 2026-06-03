@@ -1287,100 +1287,197 @@ transfer = client.transfers.<span class="c-method">create_international</span>(
   </div>
 </section>
 
-<!-- SIMULATOR -->
-<div style="position:relative;z-index:1;background:var(--bg-2);border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);padding:5rem 2.5rem;" id="simulator">
-  <div style="max-width:1100px;margin:0 auto;">
-    <div class="section-eyebrow">Cotizador en tiempo real</div>
-    <h2 style="font-family:var(--serif);font-size:clamp(1.8rem,3vw,2.6rem);font-weight:600;color:var(--text-1);margin-bottom:0.5rem;">Valida la tasa antes de integrar</h2>
-    <p style="font-size:0.82rem;color:var(--text-2);margin-bottom:2.5rem;">Las tasas se calculan con el precio de mercado USDC/CLP de Buda.com. Tu integración usará el mismo endpoint.</p>
+<!-- SIMULATOR / BUSINESS CALCULATOR -->
+<div style="background:var(--bg-2);border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2);padding:5rem 2.5rem;" id="simulator">
+<div style="max-width:1100px;margin:0 auto;">
 
-    <div class="simulator-wrap">
-      <div class="sim-topbar">
-        <span>GET /api/v2/markets/usdc-clp/ticker · simulador de cotización</span>
-        <div class="sim-live">
-          <div class="live-dot"></div>
-          Live · actualización cada 30s
+  <div class="section-eyebrow">Cotizador en tiempo real · Calculadora de negocio</div>
+  <h2 style="font-family:var(--serif);font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;color:var(--text-1);letter-spacing:-0.02em;margin-bottom:0.5rem;">Valida la tasa y modela<br>tu negocio antes de integrar</h2>
+  <p style="font-size:0.88rem;color:var(--text-2);margin-bottom:2.5rem;line-height:1.75;">Cotización real vía <code style="font-family:var(--mono);font-size:0.78rem;background:var(--bg-3);padding:2px 6px;border-radius:4px;">POST /api/v2/public_remittances</code> · Sin autenticación · Calcula el ingreso estimado según tu volumen y margen.</p>
+
+  <!-- TOP BAR -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:8px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="display:inline-flex;align-items:center;gap:6px;font-size:0.72rem;font-weight:600;color:var(--green);background:var(--green-dim);padding:4px 12px;border-radius:50px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite;"></div>
+        API pública · Buda.com
+      </div>
+      <span style="font-size:0.7rem;color:var(--text-3);" id="calcUpdTime">—</span>
+    </div>
+    <button onclick="fetchCalcQuote()" style="font-size:0.75rem;display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:50px;border:1.5px solid var(--line-2);background:white;cursor:pointer;font-family:var(--serif);color:var(--text-2);transition:all .15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--line-2)';this.style.color='var(--text-2)'">
+      ↻ Recotizar
+    </button>
+  </div>
+
+  <div style="background:white;border:1.5px solid var(--line-2);border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(91,94,244,0.06);">
+
+    <!-- ROW 1: Destino + Método -->
+    <div style="padding:1.75rem 2rem;border-bottom:1px solid var(--line);">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);font-family:var(--mono);margin-bottom:1rem;">destination_currency · payment_method</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;" id="calcDestGrid">
+        <div class="calc-dest active" data-dest="COP" onclick="calcPickDest(this)">
+          <div style="font-size:1.3rem;margin-bottom:2px;">🇨🇴</div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-1);">Colombia</div>
+          <div style="font-size:0.7rem;color:var(--text-3);font-family:var(--mono);">COP</div>
+        </div>
+        <div class="calc-dest" data-dest="PEN" onclick="calcPickDest(this)">
+          <div style="font-size:1.3rem;margin-bottom:2px;">🇵🇪</div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-1);">Perú</div>
+          <div style="font-size:0.7rem;color:var(--text-3);font-family:var(--mono);">PEN</div>
+        </div>
+        <div class="calc-dest" data-dest="VES" onclick="calcPickDest(this)">
+          <div style="font-size:1.3rem;margin-bottom:2px;">🇻🇪</div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-1);">Venezuela</div>
+          <div style="font-size:0.7rem;color:var(--text-3);font-family:var(--mono);">VES</div>
+        </div>
+        <div class="calc-dest" data-dest="BOB" onclick="calcPickDest(this)">
+          <div style="font-size:1.3rem;margin-bottom:2px;">🇧🇴</div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text-1);">Bolivia</div>
+          <div style="font-size:0.7rem;color:var(--text-3);font-family:var(--mono);">BOB</div>
         </div>
       </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;" id="calcMethodRow"></div>
+    </div>
 
-      <div class="sim-body">
-        <!-- INPUT -->
-        <div class="sim-panel">
-          <div class="sim-panel-label">Parámetros de entrada</div>
-
-          <div class="sim-field">
-            <div class="sim-field-label">source_currency</div>
-            <div class="sim-input-row" style="background:var(--bg-3);">
-              <input value="CLP" disabled style="opacity:0.5;cursor:not-allowed;font-size:0.9rem;">
-              <div class="sim-currency">Chile</div>
-            </div>
+    <!-- ROW 2: Inputs del modelo -->
+    <div style="padding:1.75rem 2rem;border-bottom:1px solid var(--line);background:var(--bg-2);">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);font-family:var(--mono);margin-bottom:1rem;">Parámetros del modelo de negocio</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:5px;">Monto (CLP)</label>
+          <div style="display:flex;align-items:center;border:1.5px solid var(--line-2);border-radius:8px;overflow:hidden;background:white;transition:border-color .15s;" onfocusin="this.style.borderColor='var(--accent)'" onfocusout="this.style.borderColor='var(--line-2)'">
+            <input type="number" id="calcAmount" value="100000" min="1000" step="10000" oninput="calcOnAmountChange()" style="flex:1;padding:0.6rem 0.75rem;border:none;background:transparent;font-family:var(--mono);font-size:0.95rem;font-weight:600;color:var(--text-1);outline:none;min-width:0;">
+            <span style="padding:0 0.7rem;font-size:0.65rem;font-weight:700;color:var(--text-3);font-family:var(--mono);border-left:1px solid var(--line-2);white-space:nowrap;">CLP</span>
           </div>
-
-          <div class="sim-field">
-            <div class="sim-field-label">source_amount</div>
-            <div class="sim-input-row">
-              <input type="number" id="simAmount" value="1000000" min="10000" step="10000" oninput="runSim()">
-              <div class="sim-currency">CLP</div>
-            </div>
-          </div>
-
-          <div class="sim-field">
-            <div class="sim-field-label">destination_currency</div>
-            <div class="dest-btns" id="destBtns">
-              <button class="dest-btn active" data-dest="CO" data-sym="COP" onclick="pickDest(this)">COP · Colombia</button>
-              <button class="dest-btn" data-dest="PE" data-sym="PEN" onclick="pickDest(this)">PEN · Perú</button>
-              <button class="dest-btn" data-dest="VE" data-sym="VES" onclick="pickDest(this)">VES · Venezuela</button>
-              <button class="dest-btn" data-dest="BO" data-sym="BOB" onclick="pickDest(this)">BOB · Bolivia</button>
-            </div>
-          </div>
+          <div style="font-size:0.65rem;color:var(--text-3);margin-top:4px;">Ticket promedio / tx</div>
         </div>
-
-        <div class="sim-divider"></div>
-
-        <!-- RESULT -->
-        <div class="sim-panel result-panel">
-          <div class="sim-panel-label">Respuesta estimada</div>
-
-          <div class="result-amount-row">
-            <div class="result-amount-label">destination_amount</div>
-            <div class="result-amount-val" id="simResult">
-              <span class="spin"></span>
-              <span class="currency-suffix" id="simSuffix">COP</span>
-            </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:5px;">Tu margen (%)</label>
+          <div style="display:flex;align-items:center;border:1.5px solid var(--line-2);border-radius:8px;overflow:hidden;background:white;" onfocusin="this.style.borderColor='var(--accent)'" onfocusout="this.style.borderColor='var(--line-2)'">
+            <input type="number" id="calcMargin" value="1.5" min="0" max="20" step="0.1" oninput="calcProjection()" style="flex:1;padding:0.6rem 0.75rem;border:none;background:transparent;font-family:var(--mono);font-size:0.95rem;font-weight:600;color:var(--text-1);outline:none;min-width:0;">
+            <span style="padding:0 0.7rem;font-size:0.65rem;font-weight:700;color:var(--text-3);font-family:var(--mono);border-left:1px solid var(--line-2);">%</span>
           </div>
-
-          <div class="result-breakdown">
-            <div class="rb-row">
-              <span>exchange_rate (CLP → COP)</span>
-              <span class="rb-val" id="simRate">—</span>
-            </div>
-            <div class="rb-row">
-              <span>fee (1.5%)</span>
-              <span class="rb-val" id="simFee">—</span>
-            </div>
-            <div class="rb-row">
-              <span>net_source_amount</span>
-              <span class="rb-val" id="simNet">—</span>
-            </div>
-            <div class="rb-row">
-              <span>estimated_arrival</span>
-              <span class="rb-val green">≤ 5 minutes</span>
-            </div>
-            <div class="rb-row">
-              <span>usdc_clp_market_price</span>
-              <span class="rb-val" id="simUsdcPrice">Cargando...</span>
-            </div>
-          </div>
+          <div style="font-size:0.65rem;color:var(--text-3);margin-top:4px;">Spread sobre tasa Buda</div>
         </div>
-      </div>
-
-      <div class="sim-footer">
-        <p class="sim-disclaimer">Cotización referencial basada en la API pública de Buda.com (USDC/CLP). Las tasas finales se confirman en el momento de ejecutar la transferencia.</p>
-        <a href="mailto:business@buda.com" class="btn btn-primary">Solicitar acceso API →</a>
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:5px;">Transacciones / día</label>
+          <div style="display:flex;align-items:center;border:1.5px solid var(--line-2);border-radius:8px;overflow:hidden;background:white;" onfocusin="this.style.borderColor='var(--accent)'" onfocusout="this.style.borderColor='var(--line-2)'">
+            <input type="number" id="calcTxDay" value="50" min="1" step="1" oninput="calcProjection()" style="flex:1;padding:0.6rem 0.75rem;border:none;background:transparent;font-family:var(--mono);font-size:0.95rem;font-weight:600;color:var(--text-1);outline:none;min-width:0;">
+            <span style="padding:0 0.7rem;font-size:0.65rem;font-weight:700;color:var(--text-3);font-family:var(--mono);border-left:1px solid var(--line-2);">tx</span>
+          </div>
+          <div style="font-size:0.65rem;color:var(--text-3);margin-top:4px;">Volumen diario estimado</div>
+        </div>
+        <div>
+          <label style="font-size:0.72rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:5px;">Días / mes</label>
+          <div style="display:flex;align-items:center;border:1.5px solid var(--line-2);border-radius:8px;overflow:hidden;background:white;" onfocusin="this.style.borderColor='var(--accent)'" onfocusout="this.style.borderColor='var(--line-2)'">
+            <input type="number" id="calcDays" value="30" min="1" max="31" step="1" oninput="calcProjection()" style="flex:1;padding:0.6rem 0.75rem;border:none;background:transparent;font-family:var(--mono);font-size:0.95rem;font-weight:600;color:var(--text-1);outline:none;min-width:0;">
+            <span style="padding:0 0.7rem;font-size:0.65rem;font-weight:700;color:var(--text-3);font-family:var(--mono);border-left:1px solid var(--line-2);">días</span>
+          </div>
+          <div style="font-size:0.65rem;color:var(--text-3);margin-top:4px;">Buda opera 24/7</div>
+        </div>
       </div>
     </div>
+
+    <!-- ROW 3: Quote result + Projection split -->
+    <div style="display:grid;grid-template-columns:1fr 1px 1fr;">
+
+      <!-- Quote -->
+      <div style="padding:1.75rem 2rem;">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);font-family:var(--mono);margin-bottom:1rem;">Cotización real · public_remittances</div>
+        <div id="calcQuoteBody">
+          <div style="text-align:center;padding:1.5rem 0;color:var(--text-3);font-size:0.82rem;">
+            <div class="spin" style="width:16px;height:16px;border:2px solid var(--line-2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle;"></div>
+            Consultando Buda.com...
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--line-2);"></div>
+
+      <!-- Projection -->
+      <div style="padding:1.75rem 2rem;background:var(--bg-2);">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);font-family:var(--mono);margin-bottom:1rem;">Proyección de ingresos por margen</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:white;border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:0.65rem;color:var(--text-3);margin-bottom:4px;">Ingreso / transacción</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--text-1);font-family:var(--mono);" id="calcPTx">—</div>
+          </div>
+          <div style="background:white;border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:0.65rem;color:var(--text-3);margin-bottom:4px;">Ingreso diario</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--text-1);font-family:var(--mono);" id="calcPDay">—</div>
+          </div>
+          <div style="background:var(--accent-dim);border:1.5px solid var(--accent);border-radius:8px;padding:10px 12px;grid-column:span 2;">
+            <div style="font-size:0.65rem;color:var(--accent-2);margin-bottom:4px;font-weight:600;">Ingreso mensual estimado</div>
+            <div style="font-size:1.5rem;font-weight:800;color:var(--accent);font-family:var(--mono);letter-spacing:-0.02em;" id="calcPMonth">—</div>
+          </div>
+          <div style="background:white;border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:0.65rem;color:var(--text-3);margin-bottom:4px;">Ingreso anual</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--text-1);font-family:var(--mono);" id="calcPYear">—</div>
+          </div>
+          <div style="background:white;border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:0.65rem;color:var(--text-3);margin-bottom:4px;">Volumen mensual</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--text-1);font-family:var(--mono);" id="calcPVol">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: Chart -->
+    <div style="padding:1.75rem 2rem;border-top:1px solid var(--line);">
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);font-family:var(--mono);margin-bottom:1rem;">Ingresos acumulados · 12 meses</div>
+      <div style="position:relative;width:100%;height:180px;">
+        <canvas id="calcChart" role="img" aria-label="Proyección de ingresos acumulados a 12 meses">Proyección de ingresos acumulados mensualmente durante 12 meses.</canvas>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding:1.25rem 2rem;border-top:1px solid var(--line);background:var(--bg-2);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+      <p style="font-size:0.68rem;color:var(--text-3);line-height:1.6;max-width:560px;font-family:var(--mono);">
+        Cotización obtenida de <strong>POST https://www.buda.com/api/v2/public_remittances</strong>. El <code>destination_amount</code> refleja el monto exacto incluyendo fees de Buda. La proyección de ingresos es referencial basada en tu margen adicional. Cotización expira en 5 min.
+      </p>
+      <a href="mailto:business@buda.com" class="btn btn-primary" style="white-space:nowrap;">Solicitar acceso API →</a>
+    </div>
+
   </div>
 </div>
+</div>
+
+<style>
+.calc-dest {
+  background: var(--bg-2);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 10px 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: border .12s, background .12s;
+}
+.calc-dest:hover { border-color: var(--line-2); }
+.calc-dest.active { border-color: var(--accent); background: white; }
+
+.calc-method-btn {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1px solid var(--line-2);
+  background: white;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all .12s;
+  font-family: var(--serif);
+}
+.calc-method-btn:hover { border-color: var(--accent); color: var(--accent); }
+.calc-method-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+.qr { display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:0.78rem; }
+.qr:last-child { border-bottom:none; }
+.ql { color:var(--text-2); }
+.qv { font-weight:600;color:var(--text-1);font-family:var(--mono);font-size:0.78rem; }
+.qv.big { font-size:1.1rem;color:var(--accent); }
+.qv.green { color:var(--green); }
+.qv.muted { color:var(--text-3);font-weight:400;font-size:0.68rem; }
+</style>
 
 <!-- INTEGRATION -->
 <div class="integration-section" id="integration">
@@ -1640,29 +1737,21 @@ transfer = client.transfers.<span class="c-method">create_international</span>(
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
+/* ── TICKER (nav strip) ── */
 const PROXY = 'https://api.allorigins.win/raw?url=';
-const BUDA = 'https://www.buda.com/api/v2';
+const BUDA  = 'https://www.buda.com/api/v2';
 
-let usdcClp = null;
-let currentDest = 'CO';
-
-const FX_RATES = {
-  CO: { sym: 'COP', perUSD: 4100, dec: 0 },
-  PE: { sym: 'PEN', perUSD: 3.72, dec: 2 },
-  VE: { sym: 'VES', perUSD: 36.5, dec: 2 },
-  BO: { sym: 'BOB', perUSD: 6.91, dec: 2 },
-};
-
-function fmt(n, dec = 0) {
+function fmt(n, dec=0) {
   if (n == null || isNaN(n)) return '—';
-  return new Intl.NumberFormat('es-CL', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(n);
+  return new Intl.NumberFormat('es-CL',{minimumFractionDigits:dec,maximumFractionDigits:dec}).format(n);
 }
+const fmtCLP = n => n == null ? '—' : '$' + fmt(Math.round(n));
 
 async function fetchTicker(market) {
   try {
-    const url = `${BUDA}/markets/${market}/ticker`;
-    const r = await fetch(PROXY + encodeURIComponent(url));
+    const r = await fetch(PROXY + encodeURIComponent(`${BUDA}/markets/${market}/ticker`));
     if (!r.ok) throw new Error();
     return (await r.json()).ticker;
   } catch { return null; }
@@ -1670,116 +1759,199 @@ async function fetchTicker(market) {
 
 async function loadTickers() {
   const pairs = [
-    { id: 'btc-clp', tEl: 't-btc', cEl: 'tc-btc', pre: '$' },
-    { id: 'eth-clp', tEl: 't-eth', cEl: 'tc-eth', pre: '$' },
-    { id: 'usdc-clp', tEl: 't-usdc', cEl: 'tc-usdc', pre: '$' },
-    { id: 'usdt-clp', tEl: 't-usdt', cEl: 'tc-usdt', pre: '$' },
-    { id: 'btc-cop', tEl: 't-btccop', cEl: 'tc-btccop', pre: 'COP ' },
+    {id:'btc-clp',  tEl:'t-btc',    cEl:'tc-btc',    pre:'$'},
+    {id:'eth-clp',  tEl:'t-eth',    cEl:'tc-eth',    pre:'$'},
+    {id:'usdc-clp', tEl:'t-usdc',   cEl:'tc-usdc',   pre:'$'},
+    {id:'usdt-clp', tEl:'t-usdt',   cEl:'tc-usdt',   pre:'$'},
+    {id:'btc-cop',  tEl:'t-btccop', cEl:'tc-btccop', pre:'COP '},
   ];
-
   for (const p of pairs) {
     const tk = await fetchTicker(p.id);
     if (!tk) continue;
     const last = parseFloat(tk.last_price[0]);
     const chg  = parseFloat(tk.price_variation_24h);
-    const pct  = (chg * 100).toFixed(2);
     const isUp = chg >= 0;
-
-    const tEl = document.getElementById(p.tEl);
-    if (tEl) tEl.textContent = p.pre + fmt(last, p.id.includes('usdc') || p.id.includes('usdt') ? 0 : 0);
-
+    const tEl  = document.getElementById(p.tEl);
+    if (tEl) tEl.textContent = p.pre + fmt(last);
     const cEl = document.getElementById(p.cEl);
-    if (cEl) {
-      cEl.textContent = (isUp ? '▲ +' : '▼ ') + pct + '%';
-      cEl.className = 'tick-change ' + (isUp ? 'tick-up' : 'tick-down');
-    }
-
-    if (p.id === 'usdc-clp') {
-      usdcClp = last;
-      updateHeroTs();
-      runSim();
-    }
+    if (cEl) { cEl.textContent = (isUp?'▲ +':'▼ ')+(chg*100).toFixed(2)+'%'; cEl.className='tick-change '+(isUp?'tick-up':'tick-down'); }
   }
 }
 
-function updateHeroTs() {
-  if (!usdcClp) return;
-  const now = new Date().toISOString().replace('.000','');
-  const el = document.getElementById('heroTs');
-  if (el) el.textContent = now;
-
-  const wbTs = document.getElementById('wbTs');
-  if (wbTs) wbTs.textContent = now;
-
-  const rate = getRate('CO');
-  const dest500k = Math.round(500000 * rate);
-  const dest1M   = Math.round(1000000 * rate);
-
-  const hr = document.getElementById('heroRate');
-  if (hr) hr.textContent = rate.toFixed(4);
-
-  const hda = document.getElementById('heroDestAmount');
-  if (hda) hda.textContent = fmt(dest500k);
-
-  const wbDA = document.getElementById('wbDestAmount');
-  if (wbDA) wbDA.textContent = fmt(dest1M);
-
-  const liveEl = document.getElementById('heroLiveRate');
-  if (liveEl) liveEl.textContent = '1 USDC = $' + fmt(usdcClp) + ' CLP';
-
-  const usdcEl = document.getElementById('simUsdcPrice');
-  if (usdcEl) usdcEl.textContent = '$' + fmt(usdcClp) + ' CLP';
-}
-
-function getRate(dest) {
-  const { perUSD } = FX_RATES[dest];
-  const clpPerUSD = usdcClp || 920;
-  return perUSD / clpPerUSD;
-}
-
-function runSim() {
-  const dest   = currentDest;
-  const info   = FX_RATES[dest];
-  const amount = parseFloat(document.getElementById('simAmount').value) || 0;
-  const fee    = amount * 0.015;
-  const net    = amount - fee;
-  const rate   = getRate(dest);
-  const result = net * rate;
-
-  const resEl = document.getElementById('simResult');
-  if (resEl) {
-    const numSpan = resEl.childNodes[0];
-    resEl.innerHTML = '<span style="font-family:var(--serif);font-size:2.4rem;font-weight:700;color:var(--text-1);">' +
-      fmt(result, info.dec) +
-      '</span><span class="currency-suffix" id="simSuffix"> ' + info.sym + '</span>';
-  }
-
-  const rateEl = document.getElementById('simRate');
-  if (rateEl) rateEl.textContent = rate.toFixed(6) + ' ' + info.sym + '/CLP';
-
-  const feeEl = document.getElementById('simFee');
-  if (feeEl) feeEl.textContent = '- $' + fmt(fee, 0) + ' CLP';
-
-  const netEl = document.getElementById('simNet');
-  if (netEl) netEl.textContent = '$' + fmt(net, 0) + ' CLP';
-}
-
-function pickDest(btn) {
-  document.querySelectorAll('.dest-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentDest = btn.dataset.dest;
-  runSim();
-}
-
+/* ── API CODE TABS (hero) ── */
 function showTab(btn, id) {
-  document.querySelectorAll('.api-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.api-code').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.api-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.api-code').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(id).classList.add('active');
 }
 
+/* ── BUSINESS CALCULATOR ── */
+const CALC_ENDPOINT = 'https://www.buda.com/api/v2/public_remittances';
+
+const METHODS = {
+  COP: [{id:'bank_transfer',label:'Transferencia bancaria'},{id:'nequi',label:'Nequi'},{id:'daviplata',label:'Daviplata'}],
+  PEN: [{id:'bank_transfer',label:'Transferencia bancaria'},{id:'yape',label:'Yape'},{id:'plin',label:'Plin'}],
+  VES: [{id:'pago_movil',label:'Pago Móvil'},{id:'bank_transfer',label:'Transferencia bancaria'}],
+  BOB: [{id:'bank_transfer',label:'Transferencia bancaria'}],
+};
+
+let calcDest   = 'COP';
+let calcMethod = 'bank_transfer';
+let calcChart  = null;
+let calcDebounce = null;
+
+function calcPickDest(btn) {
+  document.querySelectorAll('.calc-dest').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  calcDest   = btn.dataset.dest;
+  calcMethod = METHODS[calcDest][0].id;
+  renderCalcMethods();
+  fetchCalcQuote();
+}
+
+function renderCalcMethods() {
+  const row = document.getElementById('calcMethodRow');
+  if (!row) return;
+  row.innerHTML = METHODS[calcDest].map(m=>
+    `<button class="calc-method-btn${m.id===calcMethod?' active':''}" data-method="${m.id}" onclick="calcPickMethod(this)">${m.label}</button>`
+  ).join('');
+}
+
+function calcPickMethod(btn) {
+  document.querySelectorAll('.calc-method-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  calcMethod = btn.dataset.method;
+  fetchCalcQuote();
+}
+
+function calcOnAmountChange() {
+  clearTimeout(calcDebounce);
+  calcDebounce = setTimeout(fetchCalcQuote, 600);
+}
+
+async function fetchCalcQuote() {
+  const amount = parseInt(document.getElementById('calcAmount').value) || 100000;
+  const body   = document.getElementById('calcQuoteBody');
+  if (!body) return;
+
+  body.innerHTML = '<div style="text-align:center;padding:1.5rem 0;color:var(--text-3);font-size:0.82rem;"><div style="width:16px;height:16px;border:2px solid var(--line-2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle;"></div>Consultando Buda.com...</div>';
+
+  try {
+    const proxyUrl = PROXY + encodeURIComponent(CALC_ENDPOINT);
+    const res = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        origin_amount: amount,
+        origin_currency: 'CLP',
+        destination_currency: calcDest,
+        payment_method: calcMethod,
+      }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const rem  = data.remittance;
+    if (!rem) throw new Error('Sin datos');
+
+    const originAmt = parseFloat(rem.origin_amount?.[0]);
+    const destAmt   = parseFloat(rem.destination_amount?.[0]);
+    const destCur   = rem.destination_currency;
+    const rate      = destAmt / originAmt;
+    const expires   = rem.expires_at ? new Date(rem.expires_at).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+    const state     = rem.state === 'quoted' ? '✓ Cotización confirmada' : rem.state;
+
+    document.getElementById('calcUpdTime').textContent =
+      'Al ' + new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+    body.innerHTML = `
+      <div class="qr"><span class="ql">Monto enviado</span><span class="qv">${fmtCLP(originAmt)} CLP</span></div>
+      <div class="qr"><span class="ql">Destinatario recibe</span><span class="qv big">${fmt(destAmt,2)} ${destCur}</span></div>
+      <div class="qr"><span class="ql">Tasa implícita (con fees Buda)</span><span class="qv green">1 CLP = ${rate.toFixed(6)} ${destCur}</span></div>
+      <div class="qr"><span class="ql">Método de pago</span><span class="qv">${rem.payment_method || '—'}</span></div>
+      <div class="qr"><span class="ql">Estado</span><span class="qv green">${state}</span></div>
+      <div class="qr"><span class="ql">Expira a las</span><span class="qv muted">${expires} · válida 5 min</span></div>`;
+
+    calcProjection(rate);
+
+  } catch(err) {
+    body.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--red);font-size:0.82rem;">
+      No se pudo obtener cotización de Buda.com<br>
+      <span style="font-size:0.68rem;color:var(--text-3);display:block;margin-top:4px;">${err.message} · El proxy puede tener limitaciones temporales</span>
+      <button onclick="fetchCalcQuote()" style="margin-top:10px;font-size:0.72rem;padding:5px 14px;border-radius:50px;border:1px solid var(--line-2);background:white;cursor:pointer;">Reintentar</button>
+    </div>`;
+    document.getElementById('calcUpdTime').textContent = 'Error al cotizar';
+  }
+}
+
+function calcProjection(rate) {
+  const amount  = parseFloat(document.getElementById('calcAmount').value)  || 0;
+  const margin  = parseFloat(document.getElementById('calcMargin').value)  || 0;
+  const txDay   = parseFloat(document.getElementById('calcTxDay').value)   || 0;
+  const days    = parseFloat(document.getElementById('calcDays').value)    || 30;
+
+  const perTx   = amount * (margin / 100);
+  const perDay  = perTx * txDay;
+  const perMonth= perDay * days;
+  const perYear = perMonth * 12;
+  const volMo   = amount * txDay * days;
+
+  const el = id => document.getElementById(id);
+  if(el('calcPTx'))    el('calcPTx').textContent    = fmtCLP(perTx);
+  if(el('calcPDay'))   el('calcPDay').textContent   = fmtCLP(perDay);
+  if(el('calcPMonth')) el('calcPMonth').textContent = fmtCLP(perMonth);
+  if(el('calcPYear'))  el('calcPYear').textContent  = fmtCLP(perYear);
+  if(el('calcPVol'))   el('calcPVol').textContent   = fmtCLP(volMo);
+
+  drawCalcChart(perMonth);
+}
+
+function drawCalcChart(monthly) {
+  const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const data   = months.map((_,i) => Math.round(monthly * (i+1)));
+  const canvas = document.getElementById('calcChart');
+  if (!canvas) return;
+
+  if (calcChart) { calcChart.destroy(); calcChart = null; }
+
+  calcChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Ingreso acumulado CLP',
+        data,
+        backgroundColor: months.map((_,i) => i===11 ? '#5B5EF4' : '#b3b5f9'),
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $'+ctx.parsed.y.toLocaleString('es-CL')+' CLP acumulado' } }
+      },
+      scales: {
+        x: { grid:{color:'rgba(0,0,0,0.04)'}, ticks:{color:'#9090b0',font:{size:11}} },
+        y: {
+          grid:{color:'rgba(0,0,0,0.04)'},
+          ticks:{color:'#9090b0',font:{size:11},
+            callback: v=>'$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v)
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ── INIT ── */
 loadTickers();
 setInterval(loadTickers, 30000);
+renderCalcMethods();
+fetchCalcQuote();
+setInterval(fetchCalcQuote, 300000);
 </script>
 </body>
 </html>
