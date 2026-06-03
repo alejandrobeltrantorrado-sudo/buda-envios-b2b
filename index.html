@@ -1305,12 +1305,12 @@ transfer = client.transfers.<span class="c-method">create_international</span>(
     <div style="padding:1.75rem 2rem;border-bottom:1px solid var(--line);">
       <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);font-family:var(--mono);margin-bottom:1rem;">destination_currency · payment_method</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;" id="calcDestGrid">
-        <div class="calc-dest active" data-dest="COP" onclick="calcPickDest(this)">
+        <div class="calc-dest" data-dest="COP" onclick="calcPickDest(this)">
           <div style="font-size:1.3rem;margin-bottom:2px;">🇨🇴</div>
           <div style="font-size:0.82rem;font-weight:600;color:var(--text-1);">Colombia</div>
           <div style="font-size:0.7rem;color:var(--text-3);font-family:var(--mono);">COP</div>
         </div>
-        <div class="calc-dest" data-dest="PEN" onclick="calcPickDest(this)">
+        <div class="calc-dest active" data-dest="PEN" onclick="calcPickDest(this)">
           <div style="font-size:1.3rem;margin-bottom:2px;">🇵🇪</div>
           <div style="font-size:0.82rem;font-weight:600;color:var(--text-1);">Perú</div>
           <div style="font-size:0.7rem;color:var(--text-3);font-family:var(--mono);">PEN</div>
@@ -1762,13 +1762,13 @@ const CALC_ENDPOINT = '/quote';
 
 const METHODS = {
   COP: [{id:'bank_transfer',label:'Transferencia bancaria'},{id:'nequi',label:'Nequi'},{id:'daviplata',label:'Daviplata'}],
-  PEN: [{id:'bank_transfer',label:'Transferencia bancaria'},{id:'yape',label:'Yape'},{id:'plin',label:'Plin'}],
+  PEN: [{id:'yape',label:'Yape'},{id:'plin',label:'Plin'},{id:'bank_transfer',label:'Transferencia bancaria'}],
   VES: [{id:'pago_movil',label:'Pago Móvil'},{id:'bank_transfer',label:'Transferencia bancaria'}],
   BOB: [{id:'bank_transfer',label:'Transferencia bancaria'}],
 };
 
-let calcDest   = 'COP';
-let calcMethod = 'bank_transfer';
+let calcDest   = 'PEN';
+let calcMethod = 'yape';
 let calcChart  = null;
 let calcDebounce = null;
 
@@ -1819,7 +1819,10 @@ async function fetchCalcQuote() {
         payment_method: calcMethod,
       }),
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${res.status}`);
+    }
     const data = await res.json();
     const rem  = data.remittance;
     if (!rem) throw new Error('Sin datos');
